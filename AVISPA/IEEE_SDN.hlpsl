@@ -1,0 +1,211 @@
+
+
+
+role user(	U,SDNC,SN	: agent,
+		SKu		: symmetric_key,
+		H,M		: hash_func,
+		P		: text,
+		SND,RCV		: channel(dy))
+
+played_by U def=
+
+	local State 					: nat,
+	IDu,IDc,IDs,Uid,Sid1,Sid2			: text,
+	K,Ku,Ks,Pub,SK					: text,
+	R0,R1,R2,N0,N1,N2,C1,C2				: text,
+	Tu,Tc1,Tc2,Ts					: text,
+	V1,V2,V3,V4					: text
+
+	const u_c_n1,c_s_n1,s_c_n2,c_u_n2,s1,s2,s3,s4,s5,s6,s7: protocol_id
+
+	init State := 0
+
+	transition
+
+	1. State =0 	/\ RCV(start) =|>
+	   State':= 1 	/\ SND({H(IDu)}_SKu)
+			/\ secret(IDu,s1,{U})
+			
+		
+	2. State = 1 	/\ RCV({IDc.IDs.P}_SKu.M(K.P)) =|>
+           State':= 2	/\ secret({K},s2,{SDNC})
+			/\ secret({IDs},s3,{U,SDNC,SN})
+			/\ N0':=new()
+			/\ N1':=new()
+			/\ Tu':=new()
+			/\ R0':=M(N0'.P)
+			/\ Ku':=M(N0'.M(K.P))
+			/\ R1':=xor(H(Ku'),N1')
+			/\ Uid':=xor(H(Ku'),IDu)
+			/\ Sid1':=xor(H(N1'),IDs)
+			/\ V1':=H(IDu.IDs.N1'.Tu')
+			/\ SND(Uid'.Sid1'.R0'.R1'.V1'.Tu')
+			/\ secret({N0'},s5,U)
+			/\ secret({N1'},s6,U)
+			/\ witness(U,SDNC,u_c_n1,N1')
+
+
+	3. State = 2 /\ RCV(IDc.xor(H(M(K.M(N0.P))),xor(H(Ks),xor(H(Ks),N2'))).H(IDc.IDu.IDs.xor(H(M(K.M(N0.P))),xor(H(M(N0.M(K.P))),N1)).xor(H(Ks),xor(H(Ks),N2')).Tc2').Tc2') =|>
+
+	   State':= 3   /\ secret(Ks,s4,{SDNC,SN})
+			/\ secret({N2'},s7,SN)
+			/\ N2':=xor(H(Ku),xor(H(M(K.M(N0.P))),xor(H(Ks),xor(H(Ks),N2'))))
+			/\ request(U,SDNC,c_u_n2,N2')		 
+   	end role
+
+
+role controller(
+		U,SDNC,SN	: agent,
+		SKu		: symmetric_key,
+		H,M		: hash_func,
+		P		: text,
+		SND,RCV		: channel(dy))
+
+played_by SDNC def=
+
+	local State 					: nat,
+	IDu,IDc,IDs,Uid,Sid1,Sid2			: text,
+	K,Ku,Ks,Pub,SK					: text,
+	R0,R1,R2,N0,N1,N2,C1,C2				: text,
+	Tu,Tc1,Tc2,Ts					: text,
+	V1,V2,V3,V4					: text
+
+	const u_c_n1,c_s_n1,s_c_n2,c_u_n2,s1,s2,s3,s4,s5,s6,s7: protocol_id
+
+	init State := 0
+	transition
+
+	1. State = 0 	/\ RCV({H(IDu)}_SKu) =|>
+	   State':= 1  	/\ secret(IDu,s1,{U})
+			/\ Pub':=M(K.P)
+			/\ SND({IDc.IDs.P}_SKu.Pub')
+			/\ secret({K},s2,{SDNC})
+			/\ secret({IDs},s3,{U,SDNC,SN})	
+			
+	2. State = 1	/\ RCV(xor(H(M(N0'.M(K.P))),IDu).xor(H(N1'),IDs).M(N0'.P).xor(H(M(N0'.M(K.P))),N1').H(IDu.IDs.N1'.Tu').Tu') =|>
+	   State':= 2	/\ secret({N0'},s5,U)
+			/\ secret({N1'},s6,U)
+			/\ Tc1':=new()
+			/\ Ku':=M(K.M(N0'.P))
+			/\ N1':=xor(H(Ku'),xor(H(M(N0'.M(K.P))),N1'))
+			/\ IDu':=xor(H(Ku'),xor(H(M(N0'.M(K.P))),IDu))
+			/\ IDs':=xor(H(N1'),xor(H(N1'),IDs))
+			/\ C1':=xor(H(Ks),N1')
+			/\ V2':=H(IDc.IDs'.N1'.Tc1')
+			/\ SND(IDc.C1'.V2'.Tc1')
+			/\ secret(Ks,s4,{SDNC,SN})
+			/\ witness(SDNC,SN,c_s_n1,N1')
+			/\ request(SDNC,U,u_c_n1,N1')
+
+	3. State=2	/\ RCV(xor(H(N2'),IDs).xor(H(Ks),N2').H(IDs.xor(H(Ks),xor(H(Ks),xor(H(M(K.M(N0.P))),xor(H(M(N0.M(K.P))),N1)))).N2'.Ts').Ts')=|>
+	   State':=3	/\ secret({N2'},s7,SN)
+			/\ Tc2':=new()
+			/\ N2':=xor(H(Ks),xor(H(Ks),N2'))
+			/\ C2':=xor(H(Ku),N2')
+			/\ V4':=H(IDc.IDu.IDs.N1.N2'.Tc2') 
+			/\ SND(IDc.C2'.V4'.Tc2')
+			/\ witness(SDNC,U,c_u_n2,N2')
+			/\ request(SDNC,SN,s_c_n2,N2')
+	
+	end role
+
+
+role sensor(
+		U,SDNC,SN	: agent,
+		H,M		: hash_func,
+		P		: text,
+		SND,RCV		: channel(dy))
+
+played_by SN def=
+
+	local State 					: nat,
+	IDu,IDc,IDs,Uid,Sid1,Sid2			: text,
+	K,Ku,Ks,SK					: text,
+	R0,R1,R2,N0,N1,N2,C1,C2				: text,
+	Tu,Tc1,Tc2,Ts					: text,
+	V1,V2,V3,V4					: text
+
+	const u_c_n1,c_s_n1,s_c_n2,c_u_n2,s1,s2,s3,s4,s5,s6,s7: protocol_id
+
+	init State := 0
+
+	transition
+
+	1. State = 0	/\ RCV(IDc.xor(H(Ks),xor(H(M(K.M(N0'.P))),xor(H(M(N0'.M(K.P))),N1'))).H(IDc.IDs'.xor(H(M(K.M(N0'.P))),xor(H(M(N0'.M(K.P))),N1')).Tc1').Tc1') =|>
+	   State':= 1	/\ secret(IDu,s1,{U})
+			/\ secret({K},s2,{SDNC})
+			/\ secret({IDs},s3,{SDNC,SN})
+			/\ secret(Ks,s4,{SDNC,SN})
+			/\ secret({N0'},s5,U)
+			/\ secret({N1'},s6,U)
+			/\ N1':=xor(H(Ks),xor(H(Ks),xor(H(M(K.M(N0'.P))),xor(H(M(N0'.M(K.P))),N1'))))
+			/\ N2':=new()
+			/\ Ts':=new()
+			/\ R2':=xor(H(Ks),N2')
+			/\ Sid2':=xor(H(N2'),IDs)
+			/\ SK':=H(N1'.N2')
+			/\ V3':=H(IDs.N1'.N2'.Ts')
+			/\ SND(Sid2'.R2'.V3'.Ts')
+			/\ secret({N2'},s7,SN)
+			/\ witness(SN,SDNC,s_c_n2,N2')
+			/\ request(SN,SDNC,c_s_n1,N1')
+
+	end role
+	
+
+role session(
+		U,SDNC,SN	: agent,
+		SKu		: symmetric_key,
+		H,M		: hash_func,
+		P		: text)
+		
+
+def= 
+
+	local SD1,SD2,SD3,RV1,RV2,RV3 : channel(dy)
+
+	composition
+
+		user(U,SDNC,SN,SKu,H,M,P,SD1,RV1)
+		/\ controller(U,SDNC,SN,SKu,H,M,P,SD2,RV2)
+		/\ sensor(U,SDNC,SN,H,M,P,SD3,RV3)
+end role
+
+role environment()
+
+def=
+
+	const u,sdnc,sn			: agent,
+	sku				: symmetric_key,
+	h,m				: hash_func,
+	p				: text,
+	idu,idc,ids,uid,sid1,sid2			: text,
+	k,ku,ks,pub,sk					: text,
+	r0,r1,r2,n0,n1,n2,c1,c2				: text,
+	tu,tc1,tc2,ts					: text,
+	v1,v2,v3,v4					: text,
+
+	u_c_n1,c_s_n1,s_c_n2,c_u_n2,s1,s2,s3,s4,s5,s6,s7: protocol_id
+	intruder_knowledge={u,sdnc,sn,h,m,p,idc,uid,sid1,sid2,pub,r0,r1,r2,c1,c2,tu,tc1,tc2,ts,v1,v2,v3,v4}
+
+composition
+
+session(u,sdnc,sn,sku,h,m,p)
+/\session(i,sdnc,sn,sku,h,m,p)
+/\session(u,i,sn,sku,h,m,p)
+/\session(u,sdnc,i,sku,h,m,p)
+
+end role
+
+goal
+
+secrecy_of s1,s2,s3,s4,s5,s6,s7
+
+authentication_on u_c_n1,c_s_n1,s_c_n2,c_u_n2
+
+
+end goal
+
+environment()
+
+
