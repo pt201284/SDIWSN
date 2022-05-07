@@ -1,4 +1,4 @@
 # SDIWSN
-1) For installation of PyCryptodome and supporting source files please refer to https://github.com/Legrandin/pycryptodome.
-2) For installation of mininet-wifi and supporting source files please refer to https://github.com/intrig-unicamp/mininet-wifi.
-3) For installation of AVISPA and supporting source files please refer to http://www.avispa-project.org.
+1) For installation of PyCryptodome and supporting source files in please refer to https://github.com/Legrandin/pycryptodome. After installation, copy the folder PyCryptodome and paste it in your installation directory. Then, navigate to the Pycryptodome directory from terminal and execute the codes as normal python files.
+2) For installation of mininet-wifi and supporting source files please refer to https://github.com/intrig-unicamp/mininet-wifi. You can also download and install the 64-bit Pre-configured Virtual Machine. After installation, a folder named wifi will be created. Navigate to home/wifi/mininet-wifi and paste the folder mininet-wifi, and execute the codes as normal python files.
+4) For installation of AVISPA and supporting source files please refer to http://www.avispa-project.org. After installation, paste the codes in the installation directory and execute them. Note, a 32-bit Linux system is required to execute the codes. We suggest to use ubuntu 16.04
